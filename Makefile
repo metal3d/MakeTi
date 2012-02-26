@@ -1,7 +1,7 @@
 # Makefile to start Titanium Mobile project from the command line.
 
 # This is the ONLY option you should / need to configure
-ANDROID_SDK_PATH='/home/patachou/Dev/android-sdk-linux_86/'
+ANDROID_SDK_PATH:=${HOME}/android-sdk-linux_86/
 
 # Please dont change settings below here
 PROJECT_ROOT=$(shell pwd)
@@ -44,7 +44,7 @@ run:
 	@echo "Building with Titanium... as ${BUILD_TYPE}"
 	@mkdir -p '${PROJECT_ROOT}/${PROJECT_NAME}/build/iphone/'
 	@mkdir -p '${PROJECT_ROOT}/${PROJECT_NAME}/build/android/'
-	PROJECT_ROOT='${PROJECT_ROOT}' DEVICE_TYPE=${DEVICE_TYPE} bash '${MAKETI_DIR}/bin/titanium.sh'
+	PROJECT_ROOT='${PROJECT_ROOT}' DEVICE_TYPE=${DEVICE_TYPE} ANDROID_SDK_PATH=${ANDROID_SDK_PATH} bash '${MAKETI_DIR}/bin/titanium.sh'
 
 deploy:
 	@if [ "${DEVICE_TYPE}" == "" ]; then\
@@ -54,7 +54,7 @@ deploy:
 	@echo "Building with Titanium... as ${BUILD_TYPE}"
 	@mkdir -p '${PROJECT_ROOT}/${PROJECT_NAME}/build/iphone/'
 	@mkdir -p '${PROJECT_ROOT}/${PROJECT_NAME}/build/android/'
-	PROJECT_ROOT='${PROJECT_ROOT}' DEVICE_TYPE=${DEVICE_TYPE} BUILD_TYPE='device' bash '${PROJECT_ROOT}/bin/titanium.sh'
+	PROJECT_ROOT='${PROJECT_ROOT}' DEVICE_TYPE=${DEVICE_TYPE} ANDROID_SDK_PATH=${ANDROID_SDK_PATH} BUILD_TYPE='device' bash '${PROJECT_ROOT}/bin/titanium.sh'
 
 clean:
 	@rm -rf '${PROJECT_ROOT}/build/iphone/'
