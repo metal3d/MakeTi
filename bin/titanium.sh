@@ -4,23 +4,21 @@
 PROJECT_ROOT=${PROJECT_ROOT:-../}
 APP_DEVICE=${DEVICE_TYPE}
 TI_SDK_VERSION=`cat tiapp.xml | grep "<sdk-version>" | sed -e "s/<\/*sdk-version>//g"`
-TI_DIR="Library/Application Support/Titanium"
+TI_DIR="$HOME/.titanium/"
 BUILD_TYPE=${BUILD_TYPE}
 TESTFLIGHT_ENABLED=${testflight}
 TESTFLIGHT_NOTES=${notes}
 IPHONE_DEV_CERT=${cert}
 
 # Look all over for a titanium install
-for d in /Users/*
-do
-    if [ -d "$d/${TI_DIR}" ]
+#for d in /Users/*
+#do
+    if [ -d "${TI_DIR}" ]
     then
-        TI_DIR="$d/${TI_DIR}"
+        TI_DIR="${TI_DIR}"
         echo "[DEBUG] Titanium exists..."
-
-        break
     else
-        echo "[DEBUG] Titanium not found... Testing another directory"
+        echo "[DEBUG] Titanium not found ($TI_DIR)... Testing another directory"
 
         # not the most efficient place to have this, but it gets the job done
 		if [ -d "/$TI_DIR" ]; then
@@ -30,7 +28,7 @@ do
 			break
 		fi
     fi
-done
+#done
 
 # if no platform is set, use iphone as a default
 if [ "${APP_DEVICE}" == "" ]; then
@@ -50,7 +48,7 @@ if [ "${TI_SDK_VERSION}" == "" ]; then
 fi
 
 # Both iOS and Android SDKs are linked in this directory
-TI_ASSETS_DIR="$TI_DIR/mobilesdk/osx/$(echo $TI_SDK_VERSION)"
+TI_ASSETS_DIR="$TI_DIR/mobilesdk/linux/$(echo $TI_SDK_VERSION)"
 
 # Make sure this version exists
 if [ -d "${TI_ASSETS_DIR}" ]; then
@@ -73,7 +71,7 @@ if [ "${android}" == "" ]; then
 fi
 TI_ANDROID_DIR="${TI_ASSETS_DIR}/android"
 TI_ANDROID_BUILD="${TI_ANDROID_DIR}/builder.py"
-ANDROID_SDK_PATH='~/Android'
+ANDROID_SDK_PATH='/home/patachou/Dev/android-sdk-linux_86'
 
 # Get APP parameters from current tiapp.xml
 APP_ID=`cat tiapp.xml | grep "<id>" | sed -e "s/<\/*id>//g"`
@@ -215,12 +213,13 @@ if [ ${APP_DEVICE} == "iphone" -o ${APP_DEVICE} == "ipad" ]; then
 	fi
 
 elif [ ${APP_DEVICE} == "android" ]; then
+    ADBBIN="${ANDROID_SDK_PATH}/platform-tools/adb"
 
 	# Run the app in the simulator
 	if [ "${BUILD_TYPE}" == "" ]; then
 		# Check for Android Virtual Device (AVD)
 		if [ "$(ps -Ac | egrep -i 'emulator-arm' | awk '{print $1}')" ]; then
-			bash -c "'${TI_ANDROID_BUILD}' simulator '${APP_NAME}'  '${ANDROID_SDK_PATH}' '${PROJECT_ROOT}/' ${APP_ID} ${android} && adb logcat | grep Ti" \
+			bash -c "'${TI_ANDROID_BUILD}' simulator '${APP_NAME}'  '${ANDROID_SDK_PATH}' '${PROJECT_ROOT}/' ${APP_ID} ${android} && $ADBBIN logcat | grep Ti" \
 			| perl -pe 's/^\[DEBUG\].*$/\e[35m$&\e[0m/g;s/^\[INFO\].*$/\e[36m$&\e[0m/g;s/^\[WARN\].*$/\e[33m$&\e[0m/g;s/^\[ERROR\].*$/\e[31m$&\e[0m/g;'
 		else
 			echo "[ERROR] Could not find a running emulator."
@@ -230,7 +229,7 @@ elif [ ${APP_DEVICE} == "android" ]; then
 	else
 		list_called="false"
 		device_found="false"
-		bash -c "${ANDROID_SDK_PATH}/platform-tools/adb devices" | \
+		bash -c "$ADBBIN devices" | \
 		while read adb_output
 		do
 			if [ "${adb_output}" == "" ]; then
